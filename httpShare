@@ -1,0 +1,10 @@
+#!/bin/bash
+
+INTERFACE=$1
+PORT=$2
+
+URL=$(ifconfig | grep "${INTERFACE}" -A 1 | grep "inet addr" | sed 's/^[[:space:]]*//g' | awk '-F[ :]' '{print $3}' | sed 's,\(.*\),http://\1:'"${PORT},")
+echo "$URL"
+echo -n "$URL" | qr
+
+python -m SimpleHTTPServer "${PORT}"
