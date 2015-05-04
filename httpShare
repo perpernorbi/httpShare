@@ -11,6 +11,12 @@ function fetchEnvironmentParams()
     if [ "" != "${HTTPSHARE_DEFAULT_INTERFACE-""}" ]; then INTERFACE="${HTTPSHARE_DEFAULT_INTERFACE}"; fi
 }
 
+function fetchConfigFileParams()
+{
+	CONFIGFILE="$1"
+	test -f "${CONFIGFILE}" || return 1
+}
+
 function fetchCmdlineParams()
 {
 	#while getopts ":i:p:" --long "interface:,port:" opt; do
@@ -43,6 +49,7 @@ function doShare()
 	python -m SimpleHTTPServer "${PORT}"
 }
 
+fetchConfigFileParams "/etc/httpShare/config"
 fetchEnvironmentParams
 fetchCmdlineParams "$@"
 
