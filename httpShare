@@ -1,10 +1,50 @@
 #!/bin/bash
 
-INTERFACE=$1
-PORT=$2
+set -u
 
-URL=$(ifconfig | grep "${INTERFACE}" -A 1 | grep "inet addr" | sed 's/^[[:space:]]*//g' | awk '-F[ :]' '{print $3}' | sed 's,\(.*\),http://\1:'"${PORT},")
-echo "$URL"
-echo -n "$URL" | qr
+INTERFACE="eth0"
+PORT="8080"
 
-python -m SimpleHTTPServer "${PORT}"
+function fetchEnvironmentParams()
+{
+    if [ "" != "${HTTPSHARE_DEFAULT_PORT-""}" ]; then PORT="${HTTPSHARE_DEFAULT_PORT}"; fi
+    if [ "" != "${HTTPSHARE_DEFAULT_INTERFACE-""}" ]; then INTERFACE="${HTTPSHARE_DEFAULT_INTERFACE}"; fi
+}
+
+function fetchCmdlineParams()
+{
+	#while getopts ":i:p:" --long "interface:,port:" opt; do
+	while getopts ":i:p:" opt; do
+	    case ${opt} in
+	        i|interface)
+	            INTERFACE="${OPTARG}"
+	            ;;
+	        p)
+	            PORT="${OPTARG}"
+	            ;;
+	        \?)
+	            echo "Invalid option: -$OPTARG" >&2
+	            exit 1
+	            ;;
+	        :)
+	            echo "Option -$OPTARG requires an argument." >&2
+	            exit 1
+	            ;;
+	    esac
+	done
+}
+
+function doShare()
+{
+	URL=$(ifconfig | grep "${INTERFACE}" -A 1 | grep "inet addr" | sed 's/^[[:space:]]*//g' | awk '-F[ :]' '{print $3}' | sed 's,\(.*\),http://\1:'"${PORT},")
+	echo "$URL"
+	echo -n "$URL" | qr
+
+	python -m SimpleHTTPServer "${PORT}"
+}
+
+fetchEnvironmentParams
+fetchCmdlineParams "$@"
+
+echo Sharing on port ${PORT} getting IP address from ${INTERFACE}
+
