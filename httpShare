@@ -50,6 +50,7 @@ function doShare()
 }
 
 fetchConfigFileParams "/etc/httpShare/config"
+fetchConfigFileParams "${HOME}/.httpShare/config"
 fetchEnvironmentParams
 fetchCmdlineParams "$@"
 
