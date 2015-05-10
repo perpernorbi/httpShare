@@ -11,10 +11,27 @@ function fetchEnvironmentParams()
     if [ "" != "${HTTPSHARE_DEFAULT_INTERFACE-""}" ]; then INTERFACE="${HTTPSHARE_DEFAULT_INTERFACE}"; fi
 }
 
+function getParamFromFile()
+{
+    local CONFIGFILE="$1"
+    local KEY="$2"
+    local DEFAULTVALUE="$3"
+
+    local KEYGREPSTRING="^[[:space:]]*${KEY}[[:space:]]*=[[:space:]]*"
+    if grep "${KEYGREPSTRING}" "${CONFIGFILE}" > /dev/null ; then
+        grep "${KEYGREPSTRING}" "${CONFIGFILE}" | sed "s/${KEYGREPSTRING}//"
+        return 0
+    fi
+    echo "${DEFAULTVALUE}"
+    return 1
+}
+
 function fetchConfigFileParams()
 {
-	CONFIGFILE="$1"
-	test -f "${CONFIGFILE}" || return 1
+	local CONFIGFILE="$1"
+	test -r "${CONFIGFILE}" || return 1
+    PORT="$(getParamFromFile "${CONFIGFILE}" "PORT" "${PORT}")"
+    INTERFACE="$(getParamFromFile "${CONFIGFILE}" "INTERFACE" "${INTERFACE}")"
 }
 
 function fetchCmdlineParams()
@@ -42,7 +59,7 @@ function fetchCmdlineParams()
 
 function doShare()
 {
-	URL=$(ifconfig | grep "${INTERFACE}" -A 1 | grep "inet addr" | sed 's/^[[:space:]]*//g' | awk '-F[ :]' '{print $3}' | sed 's,\(.*\),http://\1:'"${PORT},")
+	local URL=$(ifconfig | grep "${INTERFACE}" -A 1 | grep "inet addr" | sed 's/^[[:space:]]*//g' | awk '-F[ :]' '{print $3}' | sed 's,\(.*\),http://\1:'"${PORT},")
 	echo "$URL"
 	echo -n "$URL" | qr
 
@@ -50,7 +67,7 @@ function doShare()
 }
 
 fetchConfigFileParams "/etc/httpShare/config"
-fetchConfigFileParams "${HOME}/.httpShare/config"
+fetchConfigFileParams "${HOME}/.config/httpShare/config"
 fetchEnvironmentParams
 fetchCmdlineParams "$@"
 
