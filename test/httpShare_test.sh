@@ -16,7 +16,8 @@ MY_NAME=`basename $0`
 MY_PATH=`dirname $0`
 
 PREFIX='httpShare_test_'
-SHELLS='/bin/sh /bin/bash /bin/dash /bin/ksh /bin/pdksh /bin/zsh'
+#SHELLS='/bin/sh /bin/bash /bin/dash /bin/ksh /bin/pdksh /bin/zsh'
+SHELLS='/bin/sh'
 TESTS=''
 for test in ${PREFIX}[a-z]*.sh; do
   TESTS="${TESTS} ${test}"
