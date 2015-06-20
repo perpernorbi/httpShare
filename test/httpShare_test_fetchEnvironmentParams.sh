@@ -7,6 +7,7 @@
 
 testFetchPort()
 {
+    unset PORT
     local HTTPSHARE_PORT="1234"
     fetchEnvironmentParams
     assertEquals "${PORT}" "${HTTPSHARE_PORT}" 
@@ -14,6 +15,7 @@ testFetchPort()
 
 testFetchInterface()
 {
+    unset INTERFACE
     local HTTPSHARE_INTERFACE="eth0"
     fetchEnvironmentParams
     assertEquals "${INTERFACE}" "${HTTPSHARE_INTERFACE}" 
