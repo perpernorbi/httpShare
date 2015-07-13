@@ -67,10 +67,12 @@ doShare()
 	python -m SimpleHTTPServer "${PORT}"
 }
 
-fetchConfigFileParams "/etc/httpShare/config"
-fetchConfigFileParams "${HOME}/.config/httpShare/config"
-fetchEnvironmentParams
-fetchCmdlineParams "$@"
+if [ "undefined" = "${HTTPSHARE_TESTMODE:-undefined}" ]; then
+	fetchConfigFileParams "/etc/httpShare/config"
+	fetchConfigFileParams "${HOME}/.config/httpShare/config"
+	fetchEnvironmentParams
+	fetchCmdlineParams "$@"
 
-echo Sharing on port ${PORT} getting IP address from ${INTERFACE}
+    doShare	
+fi
 

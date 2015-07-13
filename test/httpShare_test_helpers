@@ -48,7 +48,7 @@ th_oneTimeSetUp()
 {
   # load shFlags
   [ -n "${ZSH_VERSION:-}" ] && FLAGS_PARENT=$0
-  . ${TH_SHFLAGS}
+  HTTPSHARE_TESTMODE=1 . ${TH_SHFLAGS}
 
   # these files will be cleaned up automatically by shUnit2
   tmpDir=${shunit_tmpDir}
