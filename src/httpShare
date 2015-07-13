@@ -36,25 +36,26 @@ fetchConfigFileParams()
 
 fetchCmdlineParams()
 {
-	#while getopts ":i:p:" --long "interface:,port:" opt; do
-	while getopts ":i:p:" opt; do
-	    case ${opt} in
-	        i|interface)
-	            INTERFACE="${OPTARG}"
-	            ;;
-	        p)
-	            PORT="${OPTARG}"
-	            ;;
-	        \?)
-	            echo "Invalid option: -$OPTARG" >&2
-	            exit 1
-	            ;;
-	        :)
-	            echo "Option -$OPTARG requires an argument." >&2
-	            exit 1
-	            ;;
-	    esac
-	done
+    while [ $# -ne 0 ]; do
+        case $1 in
+            -i|--interface)
+                if [ -n "$2" ]; then
+                    INTERFACE="${2}"
+                    shift 2
+                    continue
+                fi
+                ;;
+            -p|--port)
+                if [ -n "$2" ]; then
+                    PORT="${2}"
+                    shift 2
+                    continue
+                fi
+                ;;
+            *)
+                break;
+        esac
+    done
 }
 
 doShare()
