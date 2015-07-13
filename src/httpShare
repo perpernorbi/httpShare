@@ -1,0 +1,88 @@
+#!/bin/bash
+
+set -u
+
+INTERFACE="eth0"
+PORT="8080"
+
+fetchEnvironmentParams()
+{
+    if [ "" != "${HTTPSHARE_PORT-""}" ]; then PORT="${HTTPSHARE_PORT}"; fi
+    if [ "" != "${HTTPSHARE_INTERFACE-""}" ]; then INTERFACE="${HTTPSHARE_INTERFACE}"; fi
+}
+
+getParamFromFile()
+{
+    local CONFIGFILE="$1"
+    local KEY="$2"
+    local DEFAULTVALUE="$3"
+
+    local KEYGREPSTRING="^[[:space:]]*${KEY}[[:space:]]*=[[:space:]]*"
+    if grep "${KEYGREPSTRING}" "${CONFIGFILE}" > /dev/null ; then
+        grep "${KEYGREPSTRING}" "${CONFIGFILE}" | sed "s/${KEYGREPSTRING}//"
+        return 0
+    fi
+    echo "${DEFAULTVALUE}"
+    return 1
+}
+
+fetchConfigFileParams()
+{
+	local CONFIGFILE="$1"
+	test -r "${CONFIGFILE}" || return 1
+    PORT="$(getParamFromFile "${CONFIGFILE}" "PORT" "${PORT}")"
+    INTERFACE="$(getParamFromFile "${CONFIGFILE}" "INTERFACE" "${INTERFACE}")"
+}
+
+fetchCmdlineParams()
+{
+    while [ $# -ne 0 ]; do
+        case $1 in
+            -i|--interface)
+                if [ -n "$2" ]; then
+                    INTERFACE="${2}"
+                    shift 2
+                    continue
+                fi
+                ;;
+            -p|--port)
+                if [ -n "$2" ]; then
+                    PORT="${2}"
+                    shift 2
+                    continue
+                fi
+                ;;
+            *)
+                break;
+        esac
+    done
+}
+
+getIpAddress()
+{
+    ip addr show "${INTERFACE}" | awk -F'[ /]' '/inet / { print $6 }'
+}
+
+doShare()
+{
+    local IPADDR=$(getIpAddress)
+    if [ "" = "${IPADDR}" ]; then
+        echo ERROR: No IP address on ${INTERFACE} 2>&1
+        exit 1
+    fi
+    URL="$(echo -n http://${IPADDR}:${PORT})"
+	echo "$URL"
+	echo -n "$URL" | qr
+
+	python -m SimpleHTTPServer "${PORT}"
+}
+
+if [ "undefined" = "${HTTPSHARE_TESTMODE:-undefined}" ]; then
+	fetchConfigFileParams "/etc/httpShare/config"
+	fetchConfigFileParams "${HOME}/.config/httpShare/config"
+	fetchEnvironmentParams
+	fetchCmdlineParams "$@"
+
+    doShare	
+fi
+
