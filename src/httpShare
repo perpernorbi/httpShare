@@ -58,9 +58,19 @@ fetchCmdlineParams()
     done
 }
 
+getIpAddress()
+{
+    ip addr show "${INTERFACE}" | awk -F'[ /]' '/inet / { print $6 }'
+}
+
 doShare()
 {
-	local URL=$(ifconfig | grep "${INTERFACE}" -A 1 | grep "inet addr" | sed 's/^[[:space:]]*//g' | awk '-F[ :]' '{print $3}' | sed 's,\(.*\),http://\1:'"${PORT},")
+    local IPADDR=$(getIpAddress)
+    if [ "" = "${IPADDR}" ]; then
+        echo ERROR: No IP address on ${INTERFACE} 2>&1
+        exit 1
+    fi
+    URL="$(echo -n http://${IPADDR}:${PORT})"
 	echo "$URL"
 	echo -n "$URL" | qr
 
